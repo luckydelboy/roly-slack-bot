@@ -54,13 +54,24 @@ def _detect_format(brief: str) -> str:
 
 
 def _detect_client(brief: str) -> str | None:
-    """Try to match a client name from the brief against known clients."""
+    """Try to match a client name from the brief against known clients.
+    Prefers the longest match to avoid 'bekynd' matching before 'bekyndbeauty'.
+    Also handles partial matches like 'bekynd beauty' -> 'bekyndbeauty'."""
     clients = knowledge_base.list_clients()
-    brief_lower = brief.lower()
+    brief_lower = brief.lower().replace(" ", "")  # "bekynd beauty" -> "bekyndbeauty"
+    brief_words = brief.lower()
+
+    matches = []
     for client_slug in clients:
-        if client_slug in brief_lower:
-            return client_slug
-    return None
+        # Direct match in the brief text
+        if client_slug in brief_words or client_slug in brief_lower:
+            matches.append(client_slug)
+
+    if not matches:
+        return None
+
+    # Return the longest match — "bekyndbeauty" over "bekynd"
+    return max(matches, key=len)
 
 
 def _extract_topic_hint(brief: str) -> str:
