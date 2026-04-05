@@ -41,9 +41,12 @@ def _detect_intent(text: str) -> dict:
     if url and text_lower.strip().startswith("research"):
         return {"intent": "research", "url": url, "brief": text}
 
-    # Detect advertorial intent
+    # Detect advertorial intent — but NOT questions about status like "are you writing the advertorial?"
     advertorial_words = ["advertorial", "story page", "presell", "pre-sell", "editorial page", "native ad", "landing page"]
-    if any(w in text_lower for w in advertorial_words):
+    status_words = ["are you", "is it", "how's the", "status", "done yet", "finished"]
+    is_status_question = any(w in text_lower for w in status_words)
+
+    if any(w in text_lower for w in advertorial_words) and not is_status_question:
         # Check if it's specifically a listicle
         listicle_words = ["listicle", "list of reasons", "reasons why", "numbered list", "top 5", "top 7", "top 10"]
         if any(w in text_lower for w in listicle_words):

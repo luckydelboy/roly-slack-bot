@@ -121,7 +121,12 @@ def _build_advertorial_system(format_type: str) -> str:
         "body copy, pull quotes, product images, stats bar, testimonial cards, CTA buttons, sticky mobile CTA, "
         "comparison table if relevant, footer with disclosure). "
         "Use Lora for body copy, Inter for UI. Use the accent color that matches the niche.\n\n"
-        "IMPORTANT: Output ONLY the raw HTML starting with <!DOCTYPE html>. No markdown wrapping. No ```html blocks."
+        "Use [IMAGE PLACEHOLDER: description] for any images you don't have URLs for.\n"
+        "Use https://www.bekyndbeauty.com/products/scalp-scrub as the default CTA link if no URL is provided.\n\n"
+        "ABSOLUTE RULE: Your response must start with <!DOCTYPE html> as the VERY FIRST CHARACTER. "
+        "Do NOT write any introduction, explanation, notes, or commentary before or after the HTML. "
+        "Do NOT wrap in markdown code fences. Do NOT say 'here is the advertorial'. "
+        "JUST THE RAW HTML. Nothing else. First character = <, last character = >"
     )
 
 
