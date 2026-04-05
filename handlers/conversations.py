@@ -88,7 +88,6 @@ def _run_advertorial_from_chat(client, channel, thread_ts, user, brief, is_listi
     from handlers.advertorial import (
         _detect_format, _detect_client, _extract_topic_hint,
         _build_advertorial_system, _build_listicle_system, _clean_html_output,
-        _COPY_QUALITY_RULES,
     )
     from claude_client import long_creative_request
     from config import ADVERTORIAL_MAX_TOKENS, LISTICLE_MAX_TOKENS
@@ -97,6 +96,8 @@ def _run_advertorial_from_chat(client, channel, thread_ts, user, brief, is_listi
     format_type = "listicle" if is_listicle else _detect_format(brief)
     client_slug = _detect_client(brief)
     label = "listicle" if is_listicle else f"{format_type} advertorial"
+
+    logger.info(f"PIPELINE TRIGGERED: {label} | client={client_slug} | brief={brief[:80]}")
 
     post_progress(client, channel, thread_ts, "pencil2",
                   f"Building a *{label}*"
@@ -178,6 +179,7 @@ def register(app: App):
 
         # Check if this is a pipeline request (research, advertorial, listicle)
         intent = _detect_intent(text)
+        logger.info(f"Intent detection for '{text[:50]}...': {intent}")
 
         if intent:
             # Remove thinking face — pipeline will post its own progress
