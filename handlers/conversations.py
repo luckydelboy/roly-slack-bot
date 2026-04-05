@@ -25,14 +25,21 @@ def _detect_intent(text: str) -> dict:
     text_lower = text.lower()
 
     # Detect research intent — look for URLs + research-related words
-    url_match = re.search(r'https?://[^\s]+', text)
+    # Slack wraps URLs in angle brackets: <https://example.com> or <https://example.com|example.com>
+    url_match = re.search(r'<?(https?://[^\s>|]+)', text)
+    url = url_match.group(1) if url_match else None
+
     research_words = ["research", "scrape", "analyze", "look into", "check out", "dig into", "investigate"]
-    if url_match and any(w in text_lower for w in research_words):
-        return {"intent": "research", "url": url_match.group(0), "brief": text}
+    if url and any(w in text_lower for w in research_words):
+        return {"intent": "research", "url": url, "brief": text}
 
     # Also catch "research <url>" even without explicit research words
-    if url_match and ("research" in text_lower or "brand" in text_lower):
-        return {"intent": "research", "url": url_match.group(0), "brief": text}
+    if url and ("research" in text_lower or "brand" in text_lower):
+        return {"intent": "research", "url": url, "brief": text}
+
+    # If someone just drops a URL with "research", catch it
+    if url and text_lower.strip().startswith("research"):
+        return {"intent": "research", "url": url, "brief": text}
 
     # Detect advertorial intent
     advertorial_words = ["advertorial", "story page", "presell", "pre-sell", "editorial page", "native ad", "landing page"]
