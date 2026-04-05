@@ -47,3 +47,4 @@ if __name__ == "__main__":
     logger.info(f"Starting {BOT_NAME}...")
     handler = SocketModeHandler(app, SLACK_APP_TOKEN)
     handler.start()
+
