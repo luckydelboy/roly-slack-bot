@@ -132,9 +132,25 @@ def _build_advertorial_system(format_type: str) -> str:
         "body copy, pull quotes, product images, stats bar, testimonial cards, CTA buttons, sticky mobile CTA, "
         "comparison table if relevant, footer with disclosure). "
         "Use Lora for body copy, Inter for UI. Use the accent color that matches the niche.\n\n"
-        "Use [IMAGE PLACEHOLDER: description] for any images you don't have URLs for.\n"
-        "Use https://www.bekyndbeauty.com/products/scalp-scrub as the default CTA link if no URL is provided.\n\n"
-        "ABSOLUTE RULE: Your response must start with <!DOCTYPE html> as the VERY FIRST CHARACTER. "
+        "## IMAGE RULES (ABSOLUTELY CRITICAL):\n"
+        "You do NOT have access to any real image URLs. DO NOT hallucinate URLs like unsplash.com, "
+        "cdn.shopify.com, or any external image host — those URLs will be broken and the page will look terrible.\n\n"
+        "Instead, for EVERY image, use a styled CSS placeholder div. Example:\n"
+        "```\n"
+        '<div style="width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,#f5ede3 0%,#e8d5c0 100%);'
+        'border-radius:8px;display:flex;align-items:center;justify-content:center;'
+        'font-family:\'Inter\',sans-serif;font-size:13px;color:#8b6f47;text-align:center;padding:20px;">'
+        '[HERO IMAGE: Woman examining her scalp in bathroom mirror]'
+        '</div>\n'
+        "```\n\n"
+        "Use this placeholder pattern for ALL images: hero images, product shots, before/after, testimonial avatars. "
+        "Describe what the image SHOULD show inside the brackets so the user knows what to swap in later. "
+        "NEVER write <img src=\"https://...\"> with a hallucinated URL. ONLY use the styled placeholder divs.\n\n"
+        "For testimonial avatars, use a colored circle with the initial letter (the HTML Template Guide shows this pattern).\n\n"
+        "## CTA LINK:\n"
+        "Use https://www.bekyndbeauty.com/products/scalp-scrub as the default CTA link.\n\n"
+        "## ABSOLUTE OUTPUT RULE:\n"
+        "Your response must start with <!DOCTYPE html> as the VERY FIRST CHARACTER. "
         "Do NOT write any introduction, explanation, notes, or commentary before or after the HTML. "
         "Do NOT wrap in markdown code fences. Do NOT say 'here is the advertorial'. "
         "JUST THE RAW HTML. Nothing else. First character = <, last character = >"

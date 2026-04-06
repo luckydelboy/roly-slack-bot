@@ -28,29 +28,65 @@ def _headers() -> dict:
 def generate_project_name(brand_slug: str, topic_hint: str = "") -> str:
     """Generate a clean, editorial-style project name for Vercel.
 
-    NOT clickbait. Reads like a legitimate editorial publication.
+    Reads like a legitimate editorial publication URL.
+    Uses health/wellness journal naming conventions, not brand-first URLs.
 
     Examples:
-        bekynd, "scalp care guide" → "bekynd-scalp-care-guide"
-        tao, "daily routine" → "tao-daily-routine"
-        bekynd, "" → "bekynd-article-a7f3"
+        bekynd, scalp psoriasis → "scalp-health-journal"
+        bekynd, dating confidence → "womens-confidence-review"
+        tao, oral care → "dental-wellness-daily"
     """
-    if topic_hint:
-        # Clean the topic hint into a slug
-        slug_parts = re.sub(r"[^a-z0-9\s-]", "", topic_hint.lower()).split()
-        # Take first 4-5 meaningful words
-        stop_words = {"the", "a", "an", "for", "and", "or", "of", "to", "in", "on", "is", "are", "with"}
-        meaningful = [w for w in slug_parts if w not in stop_words][:5]
-        topic_slug = "-".join(meaningful) if meaningful else ""
-    else:
-        topic_slug = ""
+    # Editorial publication naming pools — pick based on topic keywords
+    niche_publications = {
+        # Scalp/hair niche
+        "scalp": ["scalp-health-journal", "scalp-care-daily", "the-scalp-review", "dermatology-today"],
+        "psoriasis": ["skin-health-journal", "dermatology-today", "chronic-skin-review"],
+        "eczema": ["skin-health-journal", "dermatology-today", "the-skin-barrier"],
+        "hair": ["hair-health-daily", "the-hair-journal", "strand-science-review"],
+        "dandruff": ["scalp-health-journal", "scalp-care-daily"],
+        # Beauty / skincare
+        "skin": ["the-skin-journal", "clear-skin-daily", "the-beauty-review"],
+        "beauty": ["the-beauty-journal", "beauty-insider-review"],
+        "anti-aging": ["age-defiance-journal", "the-longevity-review"],
+        # Dental
+        "dental": ["dental-wellness-daily", "the-smile-journal", "oral-health-today"],
+        "teeth": ["dental-wellness-daily", "the-smile-journal"],
+        "oral": ["dental-wellness-daily", "oral-health-today"],
+        # Pet
+        "dog": ["the-canine-wellness-journal", "pet-health-daily", "the-dog-owner-guide"],
+        "cat": ["the-feline-wellness-journal", "pet-health-daily"],
+        "pet": ["pet-health-daily", "the-pet-wellness-journal"],
+        # General health
+        "joint": ["joint-health-today", "mobility-matters-journal"],
+        "sleep": ["sleep-science-daily", "the-rest-journal"],
+        "weight": ["wellness-weekly-review", "metabolic-health-daily"],
+        "stress": ["calm-living-journal", "wellness-weekly-review"],
+        "supplement": ["wellness-insider-daily", "the-supplement-review"],
+        # Fallback general
+        "_default": ["wellness-weekly-review", "health-insider-daily", "the-wellness-journal"],
+    }
 
-    if topic_slug:
-        name = f"{brand_slug}-{topic_slug}"
-    else:
-        # Fallback: brand + short hash for uniqueness
-        ts_hash = hashlib.md5(str(time.time()).encode()).hexdigest()[:4]
-        name = f"{brand_slug}-article-{ts_hash}"
+    # Pick the publication name based on topic keywords
+    topic_lower = topic_hint.lower() if topic_hint else ""
+    selected_pub = None
+
+    for keyword, pubs in niche_publications.items():
+        if keyword == "_default":
+            continue
+        if keyword in topic_lower:
+            # Use deterministic selection based on topic hash for consistency
+            h = int(hashlib.md5(topic_hint.encode()).hexdigest(), 16)
+            selected_pub = pubs[h % len(pubs)]
+            break
+
+    if not selected_pub:
+        # Default fallback
+        h = int(hashlib.md5((topic_hint or brand_slug).encode()).hexdigest(), 16)
+        selected_pub = niche_publications["_default"][h % len(niche_publications["_default"])]
+
+    # Add short unique suffix so multiple advertorials don't collide
+    ts_hash = hashlib.md5(str(time.time()).encode()).hexdigest()[:4]
+    name = f"{selected_pub}-{ts_hash}"
 
     # Sanitize: lowercase, alphanumeric + hyphens, max 63 chars
     name = re.sub(r"[^a-z0-9-]", "", name.lower())
