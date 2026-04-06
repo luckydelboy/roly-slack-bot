@@ -147,16 +147,39 @@ def deploy_html(html_content: str, project_name: str) -> str:
         data = resp.json()
 
         # The 'url' field is the build URL with a hash — NOT the clean production URL.
-        # The 'alias' array contains the clean URLs. First one is typically {name}.vercel.app
+        # The 'alias' array contains the clean URLs. We want {name}.vercel.app —
+        # NOT {name}-{team-slug}-projects.vercel.app or hash-based URLs.
         aliases = data.get("alias", [])
 
-        # Find the cleanest alias (shortest one, which is {name}.vercel.app)
+        production_url = None
+
         if aliases:
-            # Sort by length — shortest is the clean one
-            clean_alias = sorted(aliases, key=len)[0]
-            production_url = f"https://{clean_alias}"
-        else:
-            # Fallback to constructing it ourselves
+            # Filter out aliases with team slugs, hashes, or other noise
+            # We want the cleanest: just {project_name}.vercel.app
+            clean_aliases = []
+            for alias in aliases:
+                # Strip the .vercel.app suffix for comparison
+                subdomain = alias.replace(".vercel.app", "")
+                # Skip team-scoped URLs (contain "-projects")
+                if "-projects" in subdomain:
+                    continue
+                # Skip URLs with random hashes (contain words like "-git-" or long random segments)
+                if "-git-" in subdomain:
+                    continue
+                # Skip URLs that contain a username pattern (username-projects)
+                clean_aliases.append(alias)
+
+            if clean_aliases:
+                # Prefer the shortest, which is usually {project_name}.vercel.app
+                clean_alias = sorted(clean_aliases, key=len)[0]
+                production_url = f"https://{clean_alias}"
+            else:
+                # All aliases were team-scoped. Try constructing the clean URL ourselves —
+                # it might actually work if the project name is globally unique.
+                production_url = f"https://{project_name}.vercel.app"
+                logger.warning(f"All aliases were team-scoped. Using constructed URL: {production_url}")
+
+        if not production_url:
             production_url = f"https://{project_name}.vercel.app"
 
         logger.info(f"Deployed successfully: {production_url}")
